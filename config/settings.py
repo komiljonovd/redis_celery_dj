@@ -11,27 +11,48 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import environ
+import os 
+env = environ.Env()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+environ.Env.read_env(os.path.join(BASE_DIR,'.env'))
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-mpnwhm_%sg!h_#c67(4#4i12&)umn37pfqc_y^g4qukxt3o^vf'
+SECRET_KEY = env('SECRET_KEY')
 
+# 'django-insecure-mpnwhm_%sg!h_#c67(4#4i12&)umn37pfqc_y^g4qukxt3o^vf'
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = env.bool('DEBUG')
+
+# DEBUG = True
 
 ALLOWED_HOSTS = []
 
 
 REST_FRAMEWORK = {
+    # Твои текущие настройки пагинации
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 10
+    'PAGE_SIZE': 10,
+
+    # 1. Включаем классы троттлинга
+    'DEFAULT_THROTTLE_CLASSES': [
+        'rest_framework.throttling.AnonRateThrottle',  # Ограничение для неавторизованных (по IP)
+        'rest_framework.throttling.UserRateThrottle'   # Ограничение для авторизованных (по токену/сессии)
+    ],
+    
+    # 2. Настраиваем лимиты
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '10/minute',  
+        'user': '1000/day',   
+    }
 }
+
 
 
 # Application definition
@@ -139,7 +160,7 @@ CACHES = {
     },
     "sessions": {  # Это отдельная база для сессий
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379/3", # <--- Указываем базу №2
+        "LOCATION": "redis://127.0.0.1:6379/3", 
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }

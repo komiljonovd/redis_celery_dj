@@ -43,5 +43,7 @@ class NewsAPiView(ListAPIView):
     serializer_class = NewsSerializer
     
     @method_decorator(cache_page(60 * 15, key_prefix='news_api_list'))
-    def dispatch(self, request, *args, **kwargs):
-        return super().dispatch(request, *args, **kwargs)
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+
